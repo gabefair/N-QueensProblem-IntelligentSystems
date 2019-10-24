@@ -50,7 +50,7 @@ class NQueenBoard:
     def set_solving_limit(self,attempt_limit):
         self.attempt_limit = attempt_limit
 
-    def inc_attempt_counter():
+    def inc_attempt_counter(self):
         self.attempts_to_solve += 1
         
     def setNumberQueens(self, aNumber):
@@ -154,6 +154,7 @@ class NQueenBoard:
                     #print ("Queen found in location")
         self.printBoard(self.heuristicBoard)
 
+
 def get_number_of_queens():
     aNumber = 0
     while True:
@@ -164,11 +165,22 @@ def get_number_of_queens():
             print("Number has to be higher than 0. Enter again >\n")
     return aNumber
 
+def solve_game(game_board,solve_method):
+    if(solve_method=="hc"):
+        print('Hill Climbing:')
+    elif(solve_method=='hcwsm'):
+        print("Hill Climing With Sideways Movement")
+    elif(solve_method=='hcwrr'):
+        print("Hill Climbing With Random Restart")
+    elif(solve_method=="hcwrrwsm")
+        print("Hill Climbing With Random Restart and Random Movement")
+
 
 def start_program(game_board):
     game_is_ongoing = True
     while(game_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
-        print("solving")
+        print("Run: " + str(game_board.attempts_to_solve +1))
+
 
         game_board.inc_attempt_counter()
 
