@@ -165,7 +165,8 @@ def get_number_of_queens():
             print("Number has to be higher than 0. Enter again >\n")
     return aNumber
 
-def solve_game(game_board,solve_method):
+def solve_game(game_board, solve_method):
+    print("Run: " + str(game_board.attempts_to_solve +1))
     if(solve_method=="hc"):
         print('Hill Climbing:')
     elif(solve_method=='hcwsm'):
@@ -176,10 +177,11 @@ def solve_game(game_board,solve_method):
         print("Hill Climbing With Random Restart and Random Movement")
 
 
-def start_program(game_board):
-    game_is_ongoing = True
-    while(game_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
-        print("Run: " + str(game_board.attempts_to_solve +1))
+def start_program(num_of_queens, attempt_limit):
+    analysis_is_ongoing = True
+    while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
+        initialize_board(num_of_queens, attempt_limit)
+        
 
 
         game_board.inc_attempt_counter()
@@ -198,10 +200,10 @@ def main():
         attempt_limit = int(sys.argv[2])
     else:
         print("Not expecting this type of input")
-    game_board = initialize_board(NQueenBoard(), num_of_queens, attempt_limit)
-    start_program(game_board)
+    start_program(num_of_queens, attempt_limit)
 
-def initialize_board(aBoard, num_of_queens, attempt_limit):
+def initialize_board(num_of_queens, attempt_limit):
+    aBoard = NQueenBoard()
     aBoard.setNumberQueens(num_of_queens)
     aBoard.set_solving_limit(attempt_limit)
     aBoard.setInitialBoard()
