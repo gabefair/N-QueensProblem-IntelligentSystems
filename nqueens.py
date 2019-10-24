@@ -171,12 +171,19 @@ def solve_game(game_board, solve_method):
         print('Hill Climbing:')
         while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
             for i in range(attempt_limit):
+
     elif(solve_method=='hcwsm'):
         print("Hill Climing With Sideways Movement")
+        while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
+            for i in range(attempt_limit):
     elif(solve_method=='hcwrr'):
         print("Hill Climbing With Random Restart")
+        while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
+            for i in range(attempt_limit):
     elif(solve_method=="hcwrrwsm")
         print("Hill Climbing With Random Restart and Random Movement")
+        while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
+            for i in range(attempt_limit):
 
 
 def start_program(num_of_queens, attempt_limit):
@@ -186,7 +193,7 @@ def start_program(num_of_queens, attempt_limit):
         game_board = initialize_board(num_of_queens, attempt_limit)
         solve_game(game_board)
         
-            game_board.inc_attempt_counter()
+        game_board.inc_attempt_counter()
 
 
 def main():
