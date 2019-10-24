@@ -67,9 +67,10 @@ class NQueenBoard:
 
     def printBoard(self, board):
         # Goes through each row printing all the columns
-        print(board)
-        # for x in range(len(board)):
-        #     print (board[x])
+        for x in range(len(board)):
+            print (board[x])
+            if (x + 1) % self.numQueens == 0:
+                print()
         print("Heuristic Value: %s" %(self.totalHeuristic))
         print("\n")
             
@@ -159,8 +160,7 @@ def get_number_of_queens():
 def start_program(game_board):
     game_is_ongoing = True
     while(game_is_ongoing):
-        game_board.printBoard(game_board.currentBoard)
-        break
+        print("solving")
 
 
 def main():
