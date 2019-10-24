@@ -44,6 +44,14 @@ class NQueenBoard:
         self.targetPieceLocation = 0
         self.heuristicBoard = []
         self.totalHeuristic = 0
+        self.attempts_to_solve = 0
+        self.attempt_limit = 0
+
+    def set_solving_limit(self,attempt_limit):
+        self.attempt_limit = attempt_limit
+
+    def inc_attempt_counter():
+        self.attempts_to_solve += 1
         
     def setNumberQueens(self, aNumber):
         self.numQueens = int(aNumber)
@@ -159,8 +167,10 @@ def get_number_of_queens():
 
 def start_program(game_board):
     game_is_ongoing = True
-    while(game_is_ongoing):
+    while(game_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
         print("solving")
+
+        game_board.inc_attempt_counter()
 
 
 def main():
@@ -170,15 +180,18 @@ def main():
 
     if(arg_length == 1):
         num_of_queens = get_number_of_queens()
-    # elif(arg_length > 1):
-    #     print("Starting Import with the following parameters: " + str(sys.argv))
+    elif(arg_length > 1):
+        print("Starting Import with the following parameters:\nNumber of Queens: " + str(sys.argv[1]) + "\nNumber of Solving Attempts: "+ str(sys.argv[2]))
+        num_of_queens = int(sys.argv[1])
+        attempt_limit = int(sys.argv[2])
     else:
         print("Not expecting this type of input")
-    game_board = initialize_board(NQueenBoard(), num_of_queens)
+    game_board = initialize_board(NQueenBoard(), num_of_queens, attempt_limit)
     start_program(game_board)
 
-def initialize_board(aBoard, num_of_queens):
+def initialize_board(aBoard, num_of_queens, attempt_limit):
     aBoard.setNumberQueens(num_of_queens)
+    aBoard.set_solving_limit(attempt_limit)
     aBoard.setInitialBoard()
     aBoard.setRandomTarget()
     aBoard.setTotalHeuristic() 
