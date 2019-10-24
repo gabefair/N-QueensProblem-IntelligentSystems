@@ -50,7 +50,7 @@ class NQueenBoard:
 
     def setInitialBoard(self):
         """Generate new board and save it into currentBoard"""
-        self.currentBoard = self.generateBoard()
+        self.currentBoard = self.generate_new_board()
 
     def setRandomTarget(self):
         """Set random target queen for moving."""
@@ -67,11 +67,13 @@ class NQueenBoard:
 
     def printBoard(self, board):
         # Goes through each row printing all the columns
-        for x in range(0,self.numQueens):
-            print (board[x][:])
+        print(board)
+        # for x in range(len(board)):
+        #     print (board[x])
+        print("Heuristic Value: %s" %(self.totalHeuristic))
         print("\n")
             
-    def generateBoard(self):
+    def generate_new_board(self):
         """Generate board based on size entered by user (numQueens variable),
         by going through the rows."""
         
@@ -158,6 +160,7 @@ def start_program(game_board):
     game_is_ongoing = True
     while(game_is_ongoing):
         game_board.printBoard(game_board.currentBoard)
+        break
 
 
 def main():
@@ -176,9 +179,7 @@ def main():
 
 def initialize_board(aBoard, num_of_queens):
     aBoard.setNumberQueens(num_of_queens)
-    print("set queens")
-    aBoard.generateBoard()
-    print("generated board")
+    aBoard.setInitialBoard()
     aBoard.setRandomTarget()
     aBoard.setTotalHeuristic() 
     return aBoard
