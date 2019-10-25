@@ -70,7 +70,7 @@ class NQueenBoard:
         """Set random target queen for moving."""
         randNum = self.targetPieceLocation
         while randNum == self.targetPieceLocation:
-			randNum = random.randint(0,(self.numQueens-1))
+            randNum = random.randint(0,(self.numQueens-1))
         #print ("Random number generated: " + str(randNum))
         self.targetPieceLocation = randNum
         self.targetPiece = self.pieceLocations[randNum]
@@ -357,10 +357,11 @@ def solve_game(game_board, solve_method):
 
 def start_program(num_of_queens, attempt_limit):
     #analysis_is_ongoing = True
-    #methods_to_attempt["hc", "hcwsm", "hcwrr", "hcwrrwsm"]
-    #for method in methods_to_attempt:
+    methods_to_attempt = ["hc", "hcwsm", "hcwrr", "hcwrrwsm"]
     game_board = initialize_board(num_of_queens, attempt_limit)
-    solve_game(game_board)
+    for method in methods_to_attempt:
+        game_board_copy = copy.deepcopy(game_board)
+        solve_game(game_board_copy,method)
         
     #game_board.inc_attempt_counter()
 
