@@ -154,19 +154,19 @@ class NQueenBoard:
         newY = self.lowerHeuristicLocation[1]
         oldX = self.pieceLocations[self.targetPieceLocation][0]
         oldY = self.pieceLocations[self.targetPieceLocation][1]
-		
+        
         print ("Moving target piece from (" + str(oldX) +","+ str(oldY) + "); to (" + str(newX) +","+ str(newY) + ")")
-		# Move Queen to new location on the board.
+        # Move Queen to new location on the board.
         self.currentBoard[oldX][oldY] = "-"
         self.currentBoard[newX][newY] = "Q"
-		# Save new location for target Queen on pieceLocations.
+        # Save new location for target Queen on pieceLocations.
         self.pieceLocations[self.targetPieceLocation] =  self.lowerHeuristicLocation
-		# Get the new heuristic for the currentBoard.
+        # Get the new heuristic for the currentBoard.
         self.setTotalHeuristic()
         print ("Updated Board: ")
         self.printBoard(self.currentBoard)
         if self.totalHeuristic == 0:
-			# Game has been won, return False, ie. search has stopped and solution is found.
+            # Game has been won, return False, ie. search has stopped and solution is found.
             return False
         
         # Game not finished, return True, ie. search is still ongoing, end hasn't been found.
@@ -201,7 +201,7 @@ class NQueenBoard:
                     self.heuristicBoard[x][y] = str(aHeuristic)
                     # Check if a new lower heuristic was found, ie. a find the best move.
                     if (aHeuristic < self.lowerHeuristic):
-						# If true, save location.
+                        # If true, save location.
                         lowerHeurFound = True
                         self.lowerHeuristic = aHeuristic
                         self.lowerHeuristicLocation = (x,y)
@@ -252,12 +252,12 @@ def solve_game(game_board, solve_method):
                         numFailed.append(i+1)
                         analysis_is_ongoing = False
                 else:
-					# Only increase attempts in failure, as in success, we finish.
+                    # Only increase attempts in failure, as in success, we finish.
                     game_board.inc_attempt_counter()
                     numFailed.append(i+1)
                     analysis_is_ongoing = False
                     break
-				
+                
     elif(solve_method=='hcwsm'):
         print("Hill Climing With Sideways Movement")
         #TODO: If i reached maxSteps, then add to failed.
@@ -275,12 +275,13 @@ def solve_game(game_board, solve_method):
                         game_board.inc_attempt_counter()
                         numFailed.append(i+1)
                 else:
-					# Only increase attempts in failure, as in success, we finish.
+                    # Only increase attempts in failure, as in success, we finish.
                     game_board.inc_attempt_counter()
                     numFailed.append(i+1)
                     # Get a new target piece to check for possible moves.
                     game_board.setRandomTarget()
                     break
+    
     elif(solve_method=='hcwrr'):
         print("Hill Climbing With Random Restart")
         while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
@@ -297,7 +298,7 @@ def solve_game(game_board, solve_method):
                         game_board.inc_attempt_counter()
                         numFailed.append(i+1)
                 else:
-					# Only increase attempts in failure, as in success, we finish.
+                    # Only increase attempts in failure, as in success, we finish.
                     game_board.inc_attempt_counter()
                     numFailed.append(i+1)
                     # Create a new board.
@@ -321,7 +322,7 @@ def solve_game(game_board, solve_method):
                         game_board.inc_attempt_counter()
                         numFailed.append(i+1)
                 else:
-					# Only increase attempts in failure, as in success, we finish.
+                    # Only increase attempts in failure, as in success, we finish.
                     game_board.inc_attempt_counter()
                     numFailed.append(i+1)
                     
