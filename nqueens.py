@@ -1,4 +1,5 @@
 import sys
+import copy
 from pprint import pprint
 import random
 
@@ -46,12 +47,17 @@ class NQueenBoard:
         self.totalHeuristic = 0
         self.attempts_to_solve = 0
         self.attempt_limit = 0
+        self.lowerHeuristic = -1
+        self.lowerHeuristicLocation = (0,0)
 
     def set_solving_limit(self,attempt_limit):
         self.attempt_limit = attempt_limit
 
     def inc_attempt_counter(self):
         self.attempts_to_solve += 1
+        
+    def reset_attempt_counter(self):
+        self.attempts_to_solve = 0
         
     def setNumberQueens(self, aNumber):
         self.numQueens = int(aNumber)
@@ -62,16 +68,19 @@ class NQueenBoard:
 
     def setRandomTarget(self):
         """Set random target queen for moving."""
-        randNum = random.randint(0,(self.numQueens-1))
+        randNum = self.targetPieceLocation
+        while randNum == self.targetPieceLocation:
+			randNum = random.randint(0,(self.numQueens-1))
         #print ("Random number generated: " + str(randNum))
-        self.targetPiece = self.pieceLocations[randNum]
         self.targetPieceLocation = randNum
+        self.targetPiece = self.pieceLocations[randNum]
         print ("This is the target piece: " + str(self.targetPiece))
         
     def setTotalHeuristic(self):
         """Save total heuristic for current board."""
         totalH = self.generateHeuristic()
         self.totalHeuristic = totalH
+        self.lowerHeuristic = self.totalHeuristic
 
     def printBoard(self, board):
         # Goes through each row printing all the columns
@@ -100,7 +109,7 @@ class NQueenBoard:
             # Saves location of piece in pieceLocations
             self.pieceLocations.append(tempPosition)
             print(tempList[:])
-            aList.append(tempList)
+            aList.append(tempList[:])
             
         print ("Piece location: " + str(self.pieceLocations[:]))
         return aList
@@ -119,7 +128,8 @@ class NQueenBoard:
         totalH = 0
         
         if (pieces == None):
-            pieces = self.pieceLocations.copy()
+            #pieces = self.pieceLocations[:]
+            pieces = list(self.pieceLocations)
         
         # Run through the pieceLocations array n^2 times, checking if
         # any of the other pieces have the same row or column as tempPiece.
@@ -132,14 +142,52 @@ class NQueenBoard:
                         totalH+=1
         
         return totalH
+
+    def moveToLowerHeuristic(self):
+        """Set target piece in best location, and check if this location is final location (puzzle solved)."""
+
+        if (self.totalHeuristic == 0):
+            print ("Target piece already in solution location.")
+            return False 
+
+        newX = self.lowerHeuristicLocation[0]
+        newY = self.lowerHeuristicLocation[1]
+        oldX = self.pieceLocations[self.targetPieceLocation][0]
+        oldY = self.pieceLocations[self.targetPieceLocation][1]
+		
+        print ("Moving target piece from (" + str(oldX) +","+ str(oldY) + "); to (" + str(newX) +","+ str(newY) + ")")
+		# Move Queen to new location on the board.
+        self.currentBoard[oldX][oldY] = "-"
+        self.currentBoard[newX][newY] = "Q"
+		# Save new location for target Queen on pieceLocations.
+        self.pieceLocations[self.targetPieceLocation] =  self.lowerHeuristicLocation
+		# Get the new heuristic for the currentBoard.
+        self.setTotalHeuristic()
+        print ("Updated Board: ")
+        self.printBoard(self.currentBoard)
+        if self.totalHeuristic == 0:
+			# Game has been won, return False, ie. search has stopped and solution is found.
+            return False
+        
+        # Game not finished, return True, ie. search is still ongoing, end hasn't been found.
+        return True
         
     def generateHeuristicBoard(self):
         """Generate a Board where every available space/move contains the heuristic if the target piece is moved there."""
-        self.heuristicBoard = self.currentBoard.copy()
-        print("This is the heuristic board copy:")
-        self.printBoard(self.heuristicBoard)
+        #self.heuristicBoard = self.currentBoard[:]
+        self.heuristicBoard = copy.deepcopy(self.currentBoard)
+        #print("This is the heuristic board copy:")
+        #self.printBoard(self.heuristicBoard)
+        
+        # If the board is already solved, return True
+        if (self.totalHeuristic == 0):
+            print ("Board already solved!")
+            return True 
 
-        tempList = self.pieceLocations.copy()
+        #tempList = self.pieceLocations[:]
+        tempList = list(self.pieceLocations)
+        lowerHeurFound = False
+        lowerHeurLocation = (0,0)
         
         # Generates a new targetLocation list where the target piece is moved to every other location in the board, and its
         # heuristic generated. A new heurisitcBoard is generated for this iteration of currentBoard.
@@ -147,12 +195,24 @@ class NQueenBoard:
             for y in range(0,self.numQueens):
                 if (self.heuristicBoard[x][y] != "Q"):
                     tempList[self.targetPieceLocation] = (x,y)
+                    # Get heuristic from that specific place in the board for target piece.
                     aHeuristic = self.generateHeuristic(tempList)
+                    # Assign heuristic in heuristicBoard.
                     self.heuristicBoard[x][y] = str(aHeuristic)
+                    # Check if a new lower heuristic was found, ie. a find the best move.
+                    if (aHeuristic < self.lowerHeuristic):
+						# If true, save location.
+                        lowerHeurFound = True
+                        self.lowerHeuristic = aHeuristic
+                        self.lowerHeuristicLocation = (x,y)
                     #print ("This is the new target piece location: " + str(tempList[self.targetPieceLocation]) + "\n" + str(tempList[:]))
                 #else:
                     #print ("Queen found in location")
+        print  ("This is the lowest heuristic found: " + str(self.lowerHeuristic))
         self.printBoard(self.heuristicBoard)
+        #self.printBoard(self.currentBoard)
+        # Return if a new location was found that is better.
+        return lowerHeurFound
 
 
 def get_number_of_queens():
@@ -166,34 +226,143 @@ def get_number_of_queens():
     return aNumber
 
 def solve_game(game_board, solve_method):
+    betterMoveFoundBool = False
+    analysis_is_ongoing = True 
+    numFailed = []
+    numSuccess =[]
+    maxSteps = 100
     print("Run: " + str(game_board.attempts_to_solve +1))
+    #TODO: stepcounter always in 0. currentboard being pointer to heuristicboard both updating same time.
     if(solve_method=="hc"):
         print('Hill Climbing:')
-        while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
-            for i in range(attempt_limit):
-
+        while(analysis_is_ongoing): #and game_board.attempts_to_solve < game_board.attempt_limit):
+            #stepCounter = 0
+            #for i in range(game_board.attempt_limit):
+            for i in range(maxSteps):
+                betterMoveFoundBool = game_board.generateHeuristicBoard()
+                if (betterMoveFoundBool == True):
+                    analysis_is_ongoing = game_board.moveToLowerHeuristic()
+                    if (analysis_is_ongoing == False):
+                        numSuccess.append(i+1) 
+                        break
+                    elif (i == (maxSteps-1)):
+                        # If we are breaking from the for loop and a solution hasn't been found,
+                        # and the limit of steps has been reached, add as a failed attempt.
+                        game_board.inc_attempt_counter()
+                        numFailed.append(i+1)
+                        analysis_is_ongoing = False
+                else:
+					# Only increase attempts in failure, as in success, we finish.
+                    game_board.inc_attempt_counter()
+                    numFailed.append(i+1)
+                    analysis_is_ongoing = False
+                    break
+				
     elif(solve_method=='hcwsm'):
         print("Hill Climing With Sideways Movement")
+        #TODO: If i reached maxSteps, then add to failed.
         while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
-            for i in range(attempt_limit):
+            for i in range(maxSteps):
+                betterMoveFoundBool = game_board.generateHeuristicBoard()
+                if (betterMoveFoundBool == True):
+                    analysis_is_ongoing = game_board.moveToLowerHeuristic()
+                    if (analysis_is_ongoing == False):
+                        numSuccess.append(i+1) 
+                        break
+                    elif (i == (maxSteps-1)):
+                        # If we are breaking from the for loop and a solution hasn't been found,
+                        # and the limit of steps has been reached, add as a failed attempt.
+                        game_board.inc_attempt_counter()
+                        numFailed.append(i+1)
+                else:
+					# Only increase attempts in failure, as in success, we finish.
+                    game_board.inc_attempt_counter()
+                    numFailed.append(i+1)
+                    # Get a new target piece to check for possible moves.
+                    game_board.setRandomTarget()
+                    break
     elif(solve_method=='hcwrr'):
         print("Hill Climbing With Random Restart")
         while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
-            for i in range(attempt_limit):
-    elif(solve_method=="hcwrrwsm")
+            for i in range(maxSteps):
+                betterMoveFoundBool = game_board.generateHeuristicBoard()
+                if (betterMoveFoundBool == True):
+                    analysis_is_ongoing = game_board.moveToLowerHeuristic()
+                    if (analysis_is_ongoing == False):
+                        numSuccess.append(i+1) 
+                        break
+                    elif (i == (maxSteps-1)):
+                        # If we are breaking from the for loop and a solution hasn't been found,
+                        # and the limit of steps has been reached, add as a failed attempt.
+                        game_board.inc_attempt_counter()
+                        numFailed.append(i+1)
+                else:
+					# Only increase attempts in failure, as in success, we finish.
+                    game_board.inc_attempt_counter()
+                    numFailed.append(i+1)
+                    # Create a new board.
+                    aBoard.setInitialBoard()
+                    aBoard.setRandomTarget()
+                    aBoard.setTotalHeuristic()
+                    break
+    elif(solve_method=="hcwrrwsm"):
         print("Hill Climbing With Random Restart and Random Movement")
         while(analysis_is_ongoing and game_board.attempts_to_solve < game_board.attempt_limit):
-            for i in range(attempt_limit):
+            for i in range(maxSteps):
+                betterMoveFoundBool = game_board.generateHeuristicBoard()
+                if (betterMoveFoundBool == True):
+                    analysis_is_ongoing = game_board.moveToLowerHeuristic()
+                    if (analysis_is_ongoing == False):
+                        numSuccess.append(i+1) 
+                        break
+                    elif (i == (maxSteps-1)):
+                        # If we are breaking from the for loop and a solution hasn't been found,
+                        # and the limit of steps has been reached, add as a failed attempt.
+                        game_board.inc_attempt_counter()
+                        numFailed.append(i+1)
+                else:
+					# Only increase attempts in failure, as in success, we finish.
+                    game_board.inc_attempt_counter()
+                    numFailed.append(i+1)
+                    
+                    break
+    
+    print ("====================================================")
+    print ("====================================================\n")
+    print ("Attempts finished.")
+    print ("Number of attempts: " + str(game_board.attempt_limit))
+    anAvg = 0
+    if (len(numSuccess) > 0):
+        print ("Number of attemps succesful: " + str(len(numSuccess)))
+        print ("Number of steps for each one: " + str(numSuccess))
+        
+        for i in range(len(numSuccess)):
+            anAvg += numSuccess[0]
+        anAvg = anAvg/len(numSuccess)
+
+        print ("Average: " + str(anAvg))
+    elif (len(numFailed) > 0):
+        print ("Number of attemps failed: " + str(len(numFailed)))
+        print ("Number of steps for each one: " + str(numFailed))
+        
+        for i in range(len(numFailed)):
+            anAvg += numFailed[0]
+        anAvg = anAvg/len(numFailed)
+
+        print ("Average: " + str(anAvg))
+    print ("\n")
+    print ("====================================================")
+    print ("====================================================")
 
 
 def start_program(num_of_queens, attempt_limit):
-    analysis_is_ongoing = True
-    methods_to_attempt["hc", "hcwsm", "hcwrr", "hcwrrwsm"]
-    for method in methods_to_attempt:
-        game_board = initialize_board(num_of_queens, attempt_limit)
-        solve_game(game_board)
+    #analysis_is_ongoing = True
+    #methods_to_attempt["hc", "hcwsm", "hcwrr", "hcwrrwsm"]
+    #for method in methods_to_attempt:
+    game_board = initialize_board(num_of_queens, attempt_limit)
+    solve_game(game_board)
         
-        game_board.inc_attempt_counter()
+    #game_board.inc_attempt_counter()
 
 
 def main():
@@ -203,6 +372,7 @@ def main():
 
     if(arg_length == 1):
         num_of_queens = get_number_of_queens()
+        attempt_limit = 5
     elif(arg_length > 1):
         print("Starting Import with the following parameters:\nNumber of Queens: " + str(sys.argv[1]) + "\nNumber of Solving Attempts: "+ str(sys.argv[2]))
         num_of_queens = int(sys.argv[1])
